@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itkey.sam.board.model.dao.">
+	
+	<select id="getAllBoardCount" resultType="int">
+		SELECT count(*) FROM education.sample_board_tb WHERE board_del_yn = 'n'
+	</select>
+	
+	<select id="getTodayBoardCount" resultType="int">
+		SELECT count(*) 
+		FROM education.sample_board_tb 
+		where BOARD_WRITE_DATE = #{now}
+		AND BOARD_DEL_YN = 'N'
+	</select>
+	
+	<select id="getBoardList" parameterType="HashMap" resultType="HashMap">
+  		SELECT BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE ,BOARD_PUBLIC_FL,BOARD_DEL_YN
+  		FROM sample_board_tb 
+  		WHERE BOARD_DEL_YN = 'N'
+  		<if test="board.keywordType == 'writer'">
+			AND  BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%'))
+		</if>
+  		ORDER BY BOARD_IDX DESC
+  		LIMIT #{criteria.amount} OFFSET #{criteria.startNum}
+  	</select>
+  	
+  	<select id="searchBoardCount" resultType="int">
+		SELECT COUNT(*) FROM sample_board_tb
+		WHERE BOARD_DEL_YN = 'N'
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+	</select>
+	
+	<insert id="insertBoard" parameterType="HashMap">
+		INSERT INTO sample_board_tb (
+			BOARD_IDX,
+			BOARD_WRITER,
+			BOARD_TITLE,
+			BOARD_CONTENTS,
+			BOARD_VIEW_COUNT,
+			FILE_IDX,
+			BOARD_WRITE_DATE,
+			BOARD_PUBLIC_FL,
+			BOARD_DEL_YN
+		) VALUES (
+			(SELECT IFNULL(MAX(BOARD_IDX),0)+1 FROM sample_board_tb A ),
+			#{boardWriter},
+			#{boardTitle},
+			#{boardContents},
+			0,
+			#{fileIdx},
+			NOW(),
+			#{boardPublicFl},
+			'N'
+		)
+	</insert>
+	
+	<select id="getDetailBoard" parameterType="int" resultType="HashMap">
+	
+		SELECT b.* ,f.*
+		FROM sample_board_tb AS b
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON b.FILE_IDX = f.FILE_IDX
+		WHERE b.BOARD_IDX = #{boardIdx}
+		AND b.BOARD_PUBLIC_FL = 'Y'
+	
+	</select>
+	
+	<select id="getDetailSecretBoard" parameterType="int" resultType="HashMap">
+	
+		SELECT b.* ,f.*
+		FROM sample_board_tb AS b
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON b.FILE_IDX = f.FILE_IDX
+		WHERE b.BOARD_IDX = #{boardIdx}
+		AND b.BOARD_PUBLIC_FL = 'N'
+	
+	</select>
+	
+	<select id="getSecretBoard" parameterType="int" resultType="HashMap">
+	
+		SELECT b.* ,f.*
+		FROM sample_board_tb AS b
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON b.FILE_IDX = f.FILE_IDX
+		WHERE b.BOARD_IDX = #{boardIdx}
+		AND b.BOARD_PUBLIC_FL = 'N'
+	
+	</select>
+	
+	<update id="increaseCountBoard" parameterType="int">
+	
+		UPDATE sample_board_tb
+  		SET 	
+  		BOARD_VIEW_COUNT = BOARD_VIEW_COUNT+1
+  		WHERE BOARD_IDX = #{boardIdx}
+	
+	</update>
+	
+	<select id="getNextBoard" parameterType="HashMap" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX > #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		AND BOARD_DEL_YN  ='N' 
+		AND BOARD_PUBLIC_FL = 'Y'
+		ORDER BY BOARD_IDX LIMIT 1;
+	</select>
+	
+	<select id="getPrevBoard" parameterType="HashMap" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX < #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		AND BOARD_DEL_YN  ='N' 
+		AND BOARD_PUBLIC_FL = 'Y'
+		ORDER BY BOARD_IDX DESC LIMIT 1;
+	</select>
+	
+	<update id="updateBoard" parameterType="HashMap">
+	
+		UPDATE education.sample_board_tb
+		SET
+		BOARD_TITLE = #{title},
+		BOARD_CONTENTS = #{contents}
+		WHERE
+		BOARD_IDX = #{boardIdx}
+		AND
+		BOARD_WRITER = #{boardWriter}
+	
+	</update>
+	
+	<update id="deleteBoard" parameterType="HashMap">
+	
+		UPDATE  education.sample_board_tb
+		SET
+		BOARD_DEL_YN = 'Y'
+		WHERE BOARD_IDX = #{boardIdx}
+		AND
+		BOARD_WRITER = #{boardWriter}
+	
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="countBoardForAjax" resultType="int" parameterType="HashMap">
+		SELECT COUNT(*) FROM education.sample_board_tb WHERE board_del_yn = 'n'
+	</select>
+	
+	<select id="todayCountBoardForAjax" resultType="int" >
+		SELECT COUNT(*) FROM sample_board_tb WHERE BOARD_WRITE_DATE = #{today}
+	</select>
+	
+	<select id="getBoardListForAjax" parameterType="HashMap" resultType="HashMap">
+  		SELECT BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE ,BOARD_PUBLIC_FL,BOARD_DEL_YN
+  		FROM sample_board_tb 
+  		WHERE BOARD_DEL_YN = 'N'
+  		<if test="board.keywordType == 'writer'">
+			AND  BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'writerAndContent'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%'))
+		</if>
+  		ORDER BY BOARD_IDX DESC
+  		LIMIT #{criteria.amount} OFFSET #{criteria.startNum}
+  	</select>
+	
+	<select id="searchBoardCountForAjax" resultType="int">
+		SELECT COUNT(*) FROM sample_board_tb
+		WHERE BOARD_DEL_YN = 'N'
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndContent'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+	</select>
+	
+	<select id="getBoardForAjax" parameterType="BoardDTO" resultType="boardDTO">
+		SELECT * FROM sample_board_tb
+		WHERE BOARD_IDX = #{boardIdx}
+		AND BOARD_WRITER = #{boardWriter}
+	</select>
+	
+	<insert id="insetBoardForAjax" parameterType="HashMap">
+		INSERT INTO sample_board_tb (
+			BOARD_IDX,
+			BOARD_WRITER,
+			BOARD_TITLE,
+			BOARD_CONTENTS,
+			BOARD_VIEW_COUNT,
+			FILE_IDX,
+			BOARD_WRITE_DATE,
+			BOARD_PUBLIC_FL,
+			BOARD_DEL_YN
+		) VALUES (
+			(SELECT IFNULL(MAX(BOARD_IDX),0)+1 FROM sample_board_tb A ),
+			#{boardWriter},
+			#{boardTitle},
+			#{boardContents},
+			0,
+			#{fileIdx},
+			NOW(),
+			#{boardPublicFl},
+			'N'
+		)
+	</insert>
+	
+	<update id="deleteBoardForAjax" parameterType="BoardDTO">
+		UPDATE sample_board_tb
+		SET BOARD_DEL_YN = 'Y'
+		WHERE BOARD_IDX = #{boardIdx}
+		AND BOARD_WRITER = #{boardWriter}
+	</update>
+	
+	<update id="updateBoardForAjax" parameterType="BoardDTO" >
+		UPDATE sample_board_tb
+		SET 
+		BOARD_TITLE = #{boardTitle} ,
+		BOARD_CONTENTS = #{boardContents},
+		FILE_IDX = #{fileIdx}
+		WHERE BOARD_IDX = #{boardIdx}
+		AND BOARD_WRITER = #{boardWriter}
+	</update>
+	
+	<update id="increaseBoardCountForAjax" parameterType="BoardDTO">
+		UPDATE sample_board_tb
+  		SET 	
+  		BOARD_VIEW_COUNT = BOARD_VIEW_COUNT+1
+  		WHERE BOARD_IDX = #{boardIdx}
+	</update>
+	
+	<select id="getNextBoardForAjax" parameterType="BoardDTO" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX > #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndContent'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		AND BOARD_DEL_YN  ='N' 
+		AND BOARD_PUBLIC_FL = 'Y'
+		ORDER BY BOARD_IDX LIMIT 1;
+	</select>
+	
+	<select id="getPrevBoardForAjax" parameterType="BoardDTO" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX < #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndContent'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		AND BOARD_DEL_YN  ='N' 
+		AND BOARD_PUBLIC_FL = 'Y'
+		ORDER BY BOARD_IDX DESC LIMIT 1;
+	</select>
+	
+	
+
+</mapper>

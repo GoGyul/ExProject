@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itkey.sam.board.model.dto.AdminDTO">
+
+	<select id="getAdmin" parameterType="HashMap" resultType="AdminDTO">
+		SELECT * FROM sample_admin_tb
+		WHERE ADMIN_ID = #{username}
+	</select>
+	
+	<select id="getAllBoardCountForAdmin" resultType="int">
+		SELECT count(*) FROM education.sample_board_tb
+	</select>
+	
+	<select id="getTodayBoardCountForAdmin" resultType="int">
+		SELECT count(*) 
+		FROM education.sample_board_tb 
+		where BOARD_WRITE_DATE = #{now}
+	</select>
+	
+	<select id="getAllWriterCountForAdmin" resultType="int">
+		SELECT count(*) FROM education.sample_writer_tb
+	</select>
+	
+	<select id="getTodayRegistCountForAdmin" resultType="int">
+		SELECT count(*) FROM education.sample_writer_tb where BOARD_WRITER_JOIN_DATE = #{now}
+	</select>
+	
+	<select id="searchBoardCountForAdmin" resultType="int">
+		SELECT COUNT(*) FROM sample_board_tb
+		WHERE BOARD_IDX is NOT NULL
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+	</select>
+	
+	<select id="searchWriterCountForAdmin" resultType="int">
+		SELECT COUNT(*) FROM sample_writer_tb
+		WHERE BOARD_WRITER_IDX is NOT NULL
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'name'">
+			AND `BOARD_WRITER_NAME` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'phone'">
+			AND `BOARD_WRITER_PHONE` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'email'">
+			AND `BOARD_WRITER_EMAIL` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndNameAndPhoneAndEmail'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_WRITER_NAME` LIKE CONCAT('%', #{keyword}, '%') 
+			OR `BOARD_WRITER_PHONE` LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_WRITER_EMAIL` LIKE CONCAT('%', #{keyword}, '%')  )
+		</if>
+	</select>
+	
+	<select id="getBoardListForAdmin" parameterType="HashMap" resultType="HashMap">
+  		SELECT BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE ,BOARD_PUBLIC_FL,BOARD_DEL_YN
+  		FROM sample_board_tb 
+  		WHERE BOARD_IDX is NOT NULL
+  		<if test="board.keywordType == 'writer'">
+			AND  BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%')
+		</if>
+		<if test="board.keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{board.keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{board.keyword}, '%'))
+		</if>
+  		ORDER BY BOARD_IDX DESC
+  		LIMIT #{criteria.amount} OFFSET #{criteria.startNum}
+  	</select>
+  	
+  	<select id="getWriterListForAdmin" parameterType="HashMap" resultType="HashMap">
+  		SELECT BOARD_WRITER_IDX, BOARD_WRITER, BOARD_WRITER_NAME, BOARD_WRITER_PHONE, BOARD_WRITER_EMAIL, BOARD_WRITER_JOIN_DATE, DEL_YN
+  		FROM sample_writer_tb 
+  		WHERE BOARD_WRITER_IDX is NOT NULL
+  		<if test="writer.keywordType == 'writer'">
+			AND  BOARD_WRITER LIKE CONCAT('%', #{writer.keyword}, '%')
+		</if>
+		<if test="writer.keywordType == 'name'">
+			AND `BOARD_WRITER_NAME` LIKE CONCAT('%', #{writer.keyword}, '%')
+		</if>
+		<if test="writer.keywordType == 'phone'">
+			AND `BOARD_WRITER_PHONE` LIKE CONCAT('%', #{writer.keyword}, '%')
+		</if>
+		<if test="writer.keywordType == 'email'">
+			AND `BOARD_WRITER_EMAIL` LIKE CONCAT('%', #{writer.keyword}, '%')
+		</if>
+		<if test="writer.keywordType == 'writerAndNameAndPhoneAndEmail'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{writer.keyword}, '%') OR `BOARD_WRITER_NAME` LIKE CONCAT('%', #{writer.keyword}, '%') 
+			OR `BOARD_WRITER_PHONE` LIKE CONCAT('%', #{writer.keyword}, '%') OR `BOARD_WRITER_EMAIL` LIKE CONCAT('%', #{writer.keyword}, '%')  )
+		</if>
+  		ORDER BY BOARD_WRITER_IDX DESC
+  		LIMIT #{criteria.amount} OFFSET #{criteria.startNum}
+  	</select>
+  	
+  	<update id="choiceDelete" parameterType="int">
+  		UPDATE education.sample_board_tb
+  		SET 
+  		BOARD_DEL_YN = 'Y'
+  		WHERE
+  		BOARD_IDX = #{boardIdx}
+  	</update>
+  	
+  	<update id="choiceDeleteWriter" parameterType="int">
+  		UPDATE education.sample_writer_tb
+  		SET 
+  		DEL_YN = 'Y'
+  		WHERE BOARD_WRITER_IDX = #{boardWriterIdx}
+  	</update>
+  	
+  	<select id="getDetailBoardForAdmin" parameterType="int" resultType="HashMap">
+	
+		SELECT b.* ,f.*
+		FROM sample_board_tb AS b
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON b.FILE_IDX = f.FILE_IDX
+		WHERE b.BOARD_IDX = #{boardIdx}
+	
+	</select>
+	
+		<select id="getNextBoardForAdmin" parameterType="HashMap" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX > #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		ORDER BY BOARD_IDX LIMIT 1;
+	
+	</select>
+	
+	<select id="getPrevBoardForAdmin" parameterType="HashMap" resultType="HashMap">
+	<![CDATA[
+		SELECT* FROM 
+		sample_board_tb 
+		WHERE BOARD_IDX < #{boardIdx}
+	]]>
+		<if test="keywordType == 'writer'">
+			AND BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'content'">
+			AND `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="keywordType == 'writerAndTitle'">
+			AND (BOARD_WRITER LIKE CONCAT('%', #{keyword}, '%') OR `BOARD_CONTENTS` LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		ORDER BY BOARD_IDX DESC LIMIT 1;
+	
+	</select>
+	
+	<update id="deleteSeperateBoard" parameterType="int">
+		UPDATE education.sample_board_tb
+  		SET 
+  		BOARD_DEL_YN = 'Y'
+  		WHERE
+  		BOARD_IDX = #{boardIdx}
+	</update>
+	
+	<update id="deleteSeperateWriter" parameterType="int">
+		UPDATE education.sample_writer_tb
+  		SET 
+  		DEL_YN = 'Y'
+  		WHERE
+  		BOARD_WRITER_IDX = #{boardWriterIdx}
+	</update>
+	
+	<select id="getRecentlyDeleteSeperateBoard" resultType="HashMap" parameterType="int">
+		SELECT b.* ,f.*
+		FROM sample_board_tb AS b
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON b.FILE_IDX = f.FILE_IDX
+		WHERE b.BOARD_IDX = #{boardIdx}
+	</select>
+	
+	<select id="getRecentlyDeleteSeperateWriter" resultType="HashMap" parameterType="int">
+		SELECT *
+		FROM sample_writer_tb 
+		WHERE BOARD_WRITER_IDX = #{boardWriterIdx}
+	</select>
+	
+	<select id="getWriterOne" parameterType="int" resultType="WriterDTO">
+		SELECT * 
+		FROM education.sample_writer_tb
+		WHERE 
+		BOARD_WRITER_IDX = #{boardWriterIdx}
+	</select>
+	
+	
+	
+
+</mapper>

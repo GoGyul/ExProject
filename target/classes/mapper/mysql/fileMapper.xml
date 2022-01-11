@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itkey.sam.board.model.dao.FileDTO">
+
+	<select id="getMaxFileIdx" resultType="int">
+		SELECT IFNULL(MAX(FILE_IDX),0)+1 FROM SAMPLE_FILE_TB
+	</select>
+	
+	<insert id="insertFile" parameterType="fileDTO">
+		INSERT INTO SAMPLE_FILE_TB (
+			FILE_IDX,
+			FILE_ORIGINAL_NAME,
+			FILE_CHANGED_NAME,
+			FILE_PATH
+		) values (
+			#{fileIdx},
+			#{fileOriginalName},
+			#{fileChangedName},
+			#{filePath}
+		)
+	</insert>
+	
+	<update id="updateWriterProfileFile" parameterType="fileDTO">
+		UPDATE education.sample_file_tb
+		SET 
+		FILE_ORIGINAL_NAME = #{fileOriginalName},
+		FILE_CHANGED_NAME = #{fileChangedName},
+		FILE_PATH = #{filePath}
+		WHERE
+		FILE_IDX = #{fileIdx}
+	</update>
+	
+	<select id="getProfileFileByFileIdx" resultType="FileDTO">
+		SELECT * 
+		FROM education.sample_file_tb
+		WHERE FILE_IDX = #{fileIdx}
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getNewFileIdx" resultType="int">
+		SELECT IFNULL(MAX(FILE_IDX),0)+1 FROM SAMPLE_FILE_TB
+	</select>
+	
+	<insert id="insertWriterProfileForAjax" parameterType="HashMap" >
+		INSERT INTO SAMPLE_FILE_TB (
+			FILE_IDX,
+			FILE_ORIGINAL_NAME,
+			FILE_CHANGED_NAME,
+			FILE_PATH
+		) values (
+			#{fileIdx},
+			#{fileOriginalName},
+			#{fileChangedName},
+			#{filePath}
+		)
+	</insert>
+	
+	<select id="getWriterFileInfoForAjax" resultType="FileDTO">
+		SELECT *
+		FROM SAMPLE_FILE_TB
+		WHERE FILE_IDX = #{fileIdx}
+	</select>
+	
+	<insert id="insertBoardFileForAjax" parameterType="fileDTO">
+		INSERT INTO SAMPLE_FILE_TB (
+			FILE_IDX,
+			FILE_ORIGINAL_NAME,
+			FILE_CHANGED_NAME,
+			FILE_PATH
+		) values (
+			#{fileIdx},
+			#{fileOriginalName},
+			#{fileChangedName},
+			#{filePath}
+		)
+	</insert>
+	
+	<select id="getFileForDownForAjax" parameterType="int" resultType="FileDTO">
+		SELECT * 
+		FROM sample_file_tb
+		WHERE
+		FILE_IDX = #{fileIdx}
+	</select>
+
+</mapper>

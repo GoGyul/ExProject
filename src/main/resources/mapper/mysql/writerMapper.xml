@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.itkey.sam.board.model.dao.WriterDTO">
+
+	<select id="findUserById" resultType="WriterDTO">
+		SELECT * FROM SAMPLE_WRITER_TB   WHERE BOARD_WRITER = #{writerId}
+	</select>
+	
+	<insert id="insertWriter" parameterType="hashmap">
+		INSERT INTO SAMPLE_WRITER_TB (
+			BOARD_WRITER_IDX,
+			BOARD_WRITER,
+			BOARD_WRITER_NAME,
+			BOARD_WRITER_PW,
+			BOARD_WRITER_PHONE,
+			BOARD_WRITER_EMAIL,
+			FILE_IDX,
+			BOARD_WRITER_JOIN_DATE,
+			SALT,
+			DEL_YN
+		)VALUES(
+			(SELECT IFNULL(MAX(BOARD_WRITER_IDX),0)+1 FROM SAMPLE_WRITER_TB A ),
+			#{boardWriter},
+			#{boardWriterName},
+			#{boardWriterPw},
+			#{boardWriterPhone},
+			#{boardWriterEmail},
+			#{fileIdx},
+			NOW(),
+			#{salt},
+			"N"
+		)
+	</insert>
+	
+	<select id="getAllWriterCount" resultType="int">
+		SELECT count(*) FROM education.sample_writer_tb WHERE del_yn = 'n'
+	</select>
+	
+	<select id="getTodayRegistCount" resultType="int">
+		SELECT count(*) FROM education.sample_writer_tb where BOARD_WRITER_JOIN_DATE = #{now}
+	</select>
+	
+	<select id="getWriterAndFileInfoByWriterId" resultType="HashMap">
+		SELECT w.* ,f.*
+		FROM sample_writer_tb AS w
+		LEFT OUTER JOIN sample_file_tb AS f
+		ON w.FILE_IDX = f.FILE_IDX
+		WHERE w.BOARD_WRITER = #{boardWriter}
+		AND w.DEL_YN = 'N'
+	</select>
+	
+	<update id="updateWriter" parameterType="HashMap">
+		UPDATE education.sample_writer_tb
+		SET
+		BOARD_WRITER_NAME = #{boardWriterName},
+		BOARD_WRITER_PW = #{boardWriterPw},
+		BOARD_WRITER_PHONE = #{boardWriterPhone},
+		BOARD_WRITER_EMAIL = #{boardWriterEmail},
+		SALT = #{salt}
+		WHERE
+		BOARD_WRITER_IDX = #{boardWriterIdx}
+		AND
+		BOARD_WRITER = #{boardWriter}
+	</update>
+	
+	<update id="withdrawWriter" parameterType="HashMap">
+		UPDATE education.sample_writer_tb
+		SET 
+		DEL_YN = 'Y'
+		WHERE
+		BOARD_WRITER = #{boardWriter}
+		AND
+		BOARD_WRITER_IDX = #{boardWriterIdx}
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="isExistWriterByWriterId" resultType="WriterDTO">
+		SELECT * 
+		FROM education.sample_writer_tb
+		WHERE BOARD_WRITER = #{boardWriter}
+	</select>
+	
+	<select id="getWriterByWriterIdForAjax" resultType="WriterDTO">
+		SELECT * 
+		FROM education.sample_writer_tb 
+		WHERE BOARD_WRITER = #{boardWriter}
+	</select>
+	
+	<insert id="insertWriterForAjax" parameterType="HashMap" >
+		INSERT INTO SAMPLE_WRITER_TB (
+			BOARD_WRITER_IDX,
+			BOARD_WRITER,
+			BOARD_WRITER_NAME,
+			BOARD_WRITER_PW,
+			BOARD_WRITER_PHONE,
+			BOARD_WRITER_EMAIL,
+			FILE_IDX,
+			BOARD_WRITER_JOIN_DATE,
+			SALT,
+			DEL_YN
+		)VALUES(
+			(SELECT IFNULL(MAX(BOARD_WRITER_IDX),0)+1 FROM SAMPLE_WRITER_TB A ),
+			#{boardWriter},
+			#{boardWriterName},
+			#{boardWriterPw},
+			#{boardWriterPhone},
+			#{boardWriterEmail},
+			#{fileIdx},
+			NOW(),
+			#{salt},
+			#{delYn}
+		)
+	</insert>
+	
+	<select id="countWriterForAjax" resultType="int"  parameterType="HashMap">
+		SELECT COUNT(*) FROM education.sample_writer_tb WHERE del_yn = 'n'
+	</select>
+	
+	<select id="todayCountWriterForAjax" resultType="int" >
+		SELECT COUNT(*) FROM sample_writer_tb WHERE BOARD_WRITER_JOIN_DATE = #{today}
+	</select>
+	
+
+</mapper>

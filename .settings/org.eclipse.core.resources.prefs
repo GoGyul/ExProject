@@ -1,0 +1,16 @@
+eclipse.preferences.version=1
+encoding//src/main/java/com/itkey/sam/board/controller/BoardController.java=UTF-8
+encoding//src/main/webapp/WEB-INF/views/admin_board_mgmt.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/admin_member_mgmt.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/ajaxmain.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/board.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/chat.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/detail.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/exception.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/home.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/login.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/main.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/modify.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/register.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/update.jsp=UTF-8
+encoding//src/main/webapp/WEB-INF/views/write.jsp=UTF-8
