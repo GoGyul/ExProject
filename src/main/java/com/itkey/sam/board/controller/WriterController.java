@@ -121,10 +121,10 @@ public class WriterController {
 			
 			if(wDTO.getBoardWriterPW().equals(pass)) {
 				
-				if ( session.getAttribute("login") != null ){
+				if(session.getAttribute("login") != null ){
 			         // 기존에 login이란 세션 값이 존재한다면
 			         session.removeAttribute("login"); // 기존값을 제거해 준다.
-			     }
+			    }
 				
 				FileDTO fDTO = (FileDTO)fileService.getProfileFileByFileIdx(wDTO.getFileIDX());
 				wDTO.setOriginalFileName(fDTO.getFileOriginalName());
@@ -133,6 +133,7 @@ public class WriterController {
 		        session.setAttribute("loginId", wDTO.getBoardWriter());
 				
 				logger.debug("아이디, 비밀번호 일치, 로그인 성공"+wDTO);
+				
 				return 10;
 				
 			}else {

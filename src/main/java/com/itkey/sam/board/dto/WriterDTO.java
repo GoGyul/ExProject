@@ -22,6 +22,7 @@ public class WriterDTO {
 	private String keywordType;
 	private String keyword;
 	private String originalFileName;
+	private String isUseCookie;
 	
 	
 	

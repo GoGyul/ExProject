@@ -42,6 +42,17 @@
 
 <style type="text/css">
 	.on{background-color : red}
+	
+#fileInfo > label{
+	width : 200px;
+	display: inline-block;
+}
+
+#updateFileLabel{
+	width : 200px;
+	display: inline-block;
+}
+	
 </style>
 </head>
 
@@ -382,7 +393,8 @@
 						<div class="input-group">
 							<input type="text" class="form-control" readonly>
 							<div class="input-group-btn">
-								<span class="fileUpload btn login100-form-btn login-file-btn"> <span class="upl" id="upload">업로드</span> <input type="file" class="upload up" id="up" onchange="readURL(this);" />
+								<span class="fileUpload btn login100-form-btn login-file-btn"> <span class="upl" id="upload">업로드</span> 
+								<input type="file" class="upload up" id="up" onchange="readURL(this);" />
 								</span>
 								<!-- btn-orange -->
 							</div>
@@ -478,9 +490,11 @@
 										</td>
 									</tr>
 									<tr>
-										<th>첨부파일</th>
+										<th>첨부파일 </th>
 										<td id="fileInfo" colspan="3">
-											<input type="file" multiple="multiple" id="input-file-now" name="uploadFile" class="file-upload" />
+											<label id="fileLabel" for="writeFileUp">
+											<input type="file" multiple="multiple" id="writeFileUp" name="uploadFile" class="file-upload writeFileUp0" />
+											</label>
 										</td>
 									</tr>
 								</tbody>
@@ -548,7 +562,9 @@
 									<tr>
 										<th>첨부파일</th>
 										<td id="updateFileInfo" colspan="3">
-											<input type="file" multiple="multiple" id="input-file-now" name="uploadFile" class="file-upload" />
+											<label id="updateFileLabel" for="updateFileUp">
+											<input type="file" multiple="multiple" id="updateFileUp" name="uploadFile" class="file-upload updateFileUp0" />
+											</label>
 										</td>
 									</tr>
 								</tbody>
@@ -1203,32 +1219,12 @@ function modBtn(idx,writer,fileIdx){
 	if(result.fileInfo != null){
 		$('#updateFileInfo').html(fileName);
 	}else{
-		$('#updateFileInfo').html('<input type="file" multiple="multiple" id="input-file-now" name="uploadFile" class="file-upload" />');	
+		let str = "";
+		str += "<label id='updateFileLabel' for='updateFileUp'>";
+		str += "<input type='file' multiple='multiple' id='updateFileUp' name='uploadFile' class='file-upload updateFileUp0' />";
+		str += "</label>";
+		$('#updateFileInfo').html(str);	
 	}
-	
-	/*
-	$('#modiIdx').val(cdata.idx);
-	$('#boardTitle').val(cdata.title);
-	$('#writerName').text(cdata.boardWriter);
-	$('#today').text(cdata.date);
-	$('#boardContent').text(cdata.content);
-	if(cdata.publicFl == 'Y') {
-		console.log("publicFl == Y");
-		$('input:radio[name="boardPublicFl"]:input[value="Y"]').attr('checked', true);
-		$('input:radio[name="boardPublicFl"]:input[value="N"]').attr('checked', false);
-		
-	}
-	if(cdata.publicFl == 'N'){
-		console.log("publicFl == N");
-		$('input:radio[name="boardPublicFl"]:input[value="N"]').attr('checked', true);	
-		$('input:radio[name="boardPublicFl"]:input[value="Y"]').attr('checked', false);	
-	}
-	if(cdata.fileIdx != null){
-		$('#contentFile').html(cdata.fileName);
-	}else{
-		$('#contentFile').html("첨부파일이 없습니다.");
-	}
-	*/
 
 }
 
@@ -1261,6 +1257,45 @@ $( document ).ready(function() {
 				readURL(this);
 			}
 		}
+	});
+	
+	$(document).on("change" , "#updateFileUp" , function(){
+		if($('#updateFileUp').val() != ''){
+			var ext = $('#updateFileUp').val().split('.').pop().toLowerCase();
+			if($.inArray(ext, ['png','jpg','jpeg'])==-1){
+				alert("png,jpg,jpeg 파일만 업로드 할수 있습니다." );
+				$('#updateFileUp').val("");
+				return;
+			}else{
+				$('#delFileOnWriteBoard').remove();
+				readURL(this);
+				$('#updateFileInfo').append('<button type="button" style="margin-right:10px" id="delFileOnWriteBoard">삭제</button>');
+			}
+		}
+	});
+	
+	
+	
+	$('.writeFileUp0').on('change', function(){
+		if($('.writeFileUp0').val() != ''){
+			var ext = $('.writeFileUp0').val().split('.').pop().toLowerCase();
+			if($.inArray(ext, ['png','jpg','jpeg'])==-1){
+				alert("png,jpg,jpeg 파일만 업로드 할수 있습니다." );
+				$('.writeFileUp0').val("");
+				return;
+			}else{
+				$('#delFileOnWriteBoard').remove();
+				readURL(this);
+				$('#fileInfo').append('<button type="button" style="margin-right:10px" id="delFileOnWriteBoard">삭제</button>');
+			}
+		}
+	});
+	
+	$(document).on("click", "#delFileOnWriteBoard", function(){
+		$('#updateFileUp').val("");
+		$('#writeFileUp').val('');
+		$('#delFileOnWriteBoard').remove();
+		//$('#addFileOnWriteBoard').remove();
 	});
 
 	// 아이디 체크
@@ -1365,12 +1400,6 @@ $( document ).ready(function() {
 	
 	
 });	
-
-
-// 채팅 sock 변수에 바로 객체를 생성하지 않고 로그인 성공시 담아줌
-
-
-
 
 </script>
 

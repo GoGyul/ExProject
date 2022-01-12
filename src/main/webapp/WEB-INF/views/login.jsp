@@ -72,6 +72,60 @@
 
 <script>
 
+$(document).ready(function(){
+	let userInputId = getCookie("userInputId");
+	$("input[name='username']").val(userInputId);
+	
+	if($("input[name='username']").val() != ""){
+		$('#ckb1').attr("checked",true);
+	}
+	
+	$('#ckb1').change(function(){
+		console.log("쿠키 체인지")
+		if($('#ckb1').is(":checked")){
+			let userInputId = $('input[name="username"]').val();
+			setCookie("userInputId",userInputId,7);
+		}
+	});
+	
+	$("input[name='username']").keyup(function(){
+		console.log("키업")
+		if($("#ckb1").is(":checked")){ // ID 저장하기를 체크한 상태라면,
+            var userInputId = $("input[name='username']").val();
+            setCookie("userInputId", userInputId, 7); // 7일 동안 쿠키 보관
+        }
+	});	
+	
+
+});
+
+function setCookie(cookieName, value, exdays){
+	let exdate = new Date();
+	exdate.setDate(exdate.getDate()+exdays);
+	let cookieValue = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toGMTString());
+	document.cookie = cookieName + " = " + cookieValue;
+}
+
+function deleteCookie(cookieName){
+	let expireDate = new Date();
+	expireDate.setDate(expireDate.getDate() -1);
+	document.cookie = cookieName + " = " + "; expires=" + expireDate.toGMTString();
+}
+
+function getCookie(cookieName){
+	cookieName = cookieName + "=";
+	let cookieData = document.cookie;
+	let start = cookieData.indexOf(cookieName);
+	let cookieValue = '';
+	if(start != -1){
+		start += cookieName.length;
+		let end = cookieData.indexOf(';',start);
+		if(end == -1) end = cookieData.length;
+		cookieValue = cookieData.substring(start, end);
+	}
+	return unescape(cookieValue);
+}
+
 function logOn(id, pw){
 	console.log(id,pw);
 
