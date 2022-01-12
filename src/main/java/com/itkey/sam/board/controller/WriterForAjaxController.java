@@ -220,13 +220,11 @@ public class WriterForAjaxController {
 		Object obj = session.getAttribute("login");
 		String admin = (String)session.getAttribute("loginId");
 		
-		if(obj != null) {
-			session.removeAttribute("login");
-			session.removeAttribute("loginId");
-			session.removeAttribute("loginName");
-			session.removeAttribute("loginImg");
-		}
 		
+		session.removeAttribute("login");
+		session.removeAttribute("loginId");
+		session.removeAttribute("loginName");
+		session.removeAttribute("loginImg");
 		session.invalidate();
 		
 		return "0";

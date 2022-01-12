@@ -17,4 +17,6 @@ public interface FileForAjaxService {
 
 	FileDTO getFileForDownForAjax(int fileIdx);
 
+	int updateFileForAjax(List<FileDTO> fileList);
+
 }

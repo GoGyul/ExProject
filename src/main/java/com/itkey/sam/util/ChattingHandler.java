@@ -42,8 +42,8 @@ public class ChattingHandler extends TextWebSocketHandler {
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		
-//		logger.info("#ChattingHandler, handleMessage");
-//		logger.info(session.getId() + ": " + message);
+		logger.info("#ChattingHandler, handleMessage");
+		logger.info(session.getId() + ": " + message);
 		
 		Map<String,Object> map = session.getAttributes();
 		WriterDTO wDTO = (WriterDTO)map.get("login");

@@ -186,9 +186,6 @@ public class BoardForAjaxController {
 		     logger.info(key+":"+request.getParameter(key));
 		}
 		
-		// 새로 쓰는 글은 boardIdx 가 0 으로 들어오기 때문에 변수하나 만들어서 새글인지 수정글인지 비교
-		String checkIdx = "0";
-		
 		//	파라미터로 받는 값들을 BoardDTO와 fileList 변수에 담아줌
 		BoardDTO bDTO = new BoardDTO();
 		
@@ -200,43 +197,7 @@ public class BoardForAjaxController {
 		bDTO.setBoardTitle(request.getParameter("boardTitle"));
 		bDTO.setBoardWriter(request.getParameter("boardWriter"));
 		bDTO.setBoardPublicFl(request.getParameter("boardPublicFl"));
-		bDTO.setBoardIdx(request.getParameter("boardIdx"));
-		
-		//	BoardDTO에 세팅해놓은 boardIdx 값이 "0" 이 아닐시 updateBoard 로직 실행
-		if(!bDTO.getBoardIdx().equals(checkIdx)) {
-			if(CollectionUtils.isEmpty(fileList) == true){
-				logger.debug("파일 없는 업데이트 글");
-				bDTO.setFileIdx(null);
-				int result = boardForAjaxService.updateBoardForAjax(bDTO);
-				if(result == 1) {
-					return "1";
-				}else {
-					return "0";
-				}
-			}else {
-				int fileIdx = fileForAjaxService.getNewFileIdx();
-				bDTO.setFileIdx(Integer.toString(fileIdx));
-				int result = boardForAjaxService.updateBoardForAjax(bDTO);
-				
-				for(int i = 0; i<fileList.size(); i++) {
-					fileList.get(i).setFileIdx(fileIdx);
-					fileIdx++;
-				}
-				
-				int fileResult = fileForAjaxService.insertBoardFileForAjax(fileList);
-				
-				logger.debug("boardWriteForAjax fileIdx"+fileIdx);
-				
-				if(result == 1 || fileResult > 0) {
-					return "1";
-				}else {
-					return "0";
-				}
-				
-			}
-			
-			
-		}
+		//bDTO.setBoardIdx(request.getParameter("boardIdx"));
 		
 		//	파일이 없는 게시글일시 insertBoard 로직만 실행
 		if(CollectionUtils.isEmpty(fileList) == true) {
@@ -258,7 +219,6 @@ public class BoardForAjaxController {
 			}
 			
 			int fileResult = fileForAjaxService.insertBoardFileForAjax(fileList);
-			
 			logger.debug("boardWriteForAjax fileIdx"+fileIdx);
 			
 			if(result == 1 || fileResult > 0) {
@@ -312,5 +272,90 @@ public class BoardForAjaxController {
 		}
         
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/updateView.do")
+	public String updateView(@RequestParam Map<String,Object> param) throws JsonProcessingException {
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		BoardDTO bDTO = new BoardDTO();
+		bDTO.setBoardIdx(param.get("boardIdx").toString());
+		bDTO.setBoardWriter(param.get("boardWriter").toString());
+		
+		bDTO = boardForAjaxService.getBoardForAjax(bDTO);
+		map.put("boardInfo",bDTO);
+		
+		FileDTO fDTO = new FileDTO();
+		if(bDTO.getFileIdx() == null || bDTO.getFileIdx().equals("")) {
+			map.put("fileInfo", null);
+		}else {
+			fDTO.setFileIdx(Integer.parseInt(bDTO.getFileIdx()));
+			fDTO = fileForAjaxService.getWriterFileInfoForAjax(fDTO.getFileIdx());
+			map.put("fileInfo", fDTO);
+		}
+		
+		ObjectMapper mapper = new ObjectMapper();
+		String json = "";
+		json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+		
+		return json;
+		
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/boardUpdateForAjax.do", method = RequestMethod.POST)
+	public String boardUpdateForAjax(MultipartHttpServletRequest request) throws IOException {
+		
+		Map<String,Object> param = new HashMap<String,Object>();
+		
+		logger.debug("boardUpdateForAjax controller input");
+		Enumeration<?> paramKeys = request.getParameterNames();
+		while (paramKeys.hasMoreElements()) {
+		     String key = (String)paramKeys.nextElement();
+		     logger.info(key+":"+request.getParameter(key));
+		}
+		
+		BoardDTO bDTO = new BoardDTO();
+		
+		FileUtils fileUtils = new FileUtils();
+		List<FileDTO> fileList = fileUtils.parseFileInfo(request);
+		logger.debug("boardWriteForAjax fileList"+fileList);
+		
+		bDTO.setBoardContents(request.getParameter("boardContents"));
+		bDTO.setBoardTitle(request.getParameter("boardTitle"));
+		bDTO.setBoardWriter(request.getParameter("boardUpdateWriter"));
+		bDTO.setBoardPublicFl(request.getParameter("boardPublicFl"));
+		bDTO.setBoardIdx(request.getParameter("boardIdx"));
+		
+		if(CollectionUtils.isEmpty(fileList) == true) {
+			int result = boardForAjaxService.updateBoardForAjax(bDTO);
+			if(result == 1) {
+				return "1";
+			}else {
+				return "0";
+			}
+		}else {
+			int fileIdx = fileForAjaxService.getNewFileIdx();
+			bDTO.setFileIdx(Integer.toString(fileIdx));
+			int result = boardForAjaxService.updateBoardForAjax(bDTO);
+			
+			for(int i = 0; i<fileList.size(); i++) {
+				fileList.get(i).setFileIdx(fileIdx);
+				fileIdx++;
+			}
+			
+			int fileResult = fileForAjaxService.insertBoardFileForAjax(fileList);
+			logger.debug("boardWriteForAjax fileIdx"+fileIdx);
+			
+			if(result == 1 || fileResult > 0) {
+				return "1";
+			}else {
+				return "0";
+			}
+		}	
+		
+	}
+	
+	
 	
 }

@@ -63,7 +63,7 @@
 	
 	<!-- 20220104 웹소켓 핸들러 등록  --> 
 	<websocket:handlers>
-		<websocket:mapping handler="chattingHandler" path="/chat.do/"/>
+		<websocket:mapping handler="chattingHandler" path="/ajaxMain.do"/>
 		
 			<websocket:handshake-interceptors>
 			<beans:bean

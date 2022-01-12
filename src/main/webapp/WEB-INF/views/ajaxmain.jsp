@@ -33,6 +33,7 @@
 <script src="resources/vendor/daterangepicker/daterangepicker.js"></script>
 <script src="resources/vendor/countdowntime/countdowntime.js"></script>
 <script src="resources/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script>
 	function fn_chat_toggle() {
 		$(".panel-whole-body").slideToggle();
@@ -58,6 +59,8 @@
 	<input type="hidden" id="selectUrl" value="/sam/selectBoardForAjax.do">
 	<input type="hidden" id="delUrl" value="/sam/deleteBoardForAjax.do">
 	<input type="hidden" id="fileDownUrl" value="/sam/fileDownForAjax.do">
+	<input type="hidden" id="updateWrite" value="/sam/updateWrite.do">
+	<input type="hidden" id="updateViewUrl" value="/sam/updateView.do">
 <!-- 
 	
 	<input type="hidden" id="selPage" name="selPage" value="1"/>
@@ -74,7 +77,8 @@
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
 					<span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">ITKey Education, ${sessionScope.loginId}</a>
+				<a class="navbar-brand" href="#">ITKey Education</a>
+				<input type="text" id="sessionName" name="boardWriterName" value="${sessionScope.loginName}">
 			</div>
 			
 			<!-- 
@@ -101,8 +105,6 @@
 
 				
 			</div>
-			<input type="text" id="pageNum" name="pageNum" value="${pageMaker.cri.pageNum }">123
-			<input type="text" id="amount" name="amount" value="${pageMaker.cri.amount }">${pageMaker.cri.amount}
 		</div>
 	</nav>
 	<div class="limiter iframe-before-login">
@@ -220,7 +222,7 @@
 		</div>
 	</div>
 
-	<div class="container">
+	<div class="container chatContainer">
 		<div class="row chat-window col-xs-5 col-md-3" id="chat_window_1" style="margin-left: 10px;">
 			<div class="col-xs-12 col-md-12">
 				<div class="panel panel-default">
@@ -238,6 +240,7 @@
 				<div class="panel-whole-body" style="display: none;">
 					<div class="panel-body msg_container_base">
 						<div class="row msg_container base_sent">
+						<!-- 
 							<div class="col-md-10 col-xs-10">
 								<div class="messages msg_sent">
 									<p>내가 보낸 내용입니다.</p>
@@ -247,25 +250,30 @@
 							<div class="col-md-2 col-xs-2 avatar">
 								<img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" class=" img-responsive ">
 							</div>
+						 -->
 						</div>
 						<div class="row msg_container base_receive">
-							<div class="col-md-2 col-xs-2 avatar">
+							<!-- 
+							<div class="col-md-2 col-xs-2 avatar">	
 								<img src="http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg" class=" img-responsive ">
-							</div>
+							</div>	
+							 -->
+							
 							<div class="col-md-10 col-xs-10">
-								<div class="messages msg_receive">
-									<p>다른사람이 보낸 내용입니다.</p>
-									<time datetime="2009-11-13T20:00">2019-06-24 13:22</time>
-								</div>
+							<!-- 
+							<div class="messages msg_receive">	
+								<p>다른사람이 보낸 내용입니다.</p>
+								<time datetime="2009-11-13T20:00">2019-06-24 13:22</time>
+							</div>	 
+							 -->
 							</div>
 						</div>
-
 					</div>
 					<div class="panel-footer">
 						<div class="input-group">
-							<input id="btn-input" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." />
+							<input id="msg" type="text" class="form-control input-sm chat_input" placeholder="Write your message here..." />
 							<span class="input-group-btn">
-								<button class="btn btn-default btn-sm" id="btn-chat">보내기</button>
+								<button class="btn btn-default btn-sm" id="button-send">보내기</button>
 							</span>
 						</div>
 					</div>
@@ -495,6 +503,74 @@
 		</div>
 	</div>
 	<!--//Write Modal -->
+	
+	<!--update Modal -->
+	<div class="modal fade" id="updateWriteModal" role="dialog">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">
+						<i class="fa fa-paper-plane" style="color: #b224ef;"></i>수정
+					</h4>
+				</div>
+				<div class="modal-body">
+					<form id="boardUpdateForm" action="/sam/boardUpdateForAjax.do" method="post" enctype="multipart/form-data">
+					<input type="text" id="hiddenUpdateWriterId" name="boardUpdateWriter" value=""> 
+					<input type="hidden" name="boardIdx" id="updateIdx" value="0"/>
+					<input type="hidden" id="hiddenFileIdx" name="fileIdx" value="">
+					<div class="row">
+						<div class="col-sm-12">
+							<table class="table table-bordered">
+								<tbody>
+									<tr>
+										<th>제목</th>
+										<td colspan="3" class="input-td">
+											<input id="updateTitle" name="boardTitle" type="text" class="form-control input-sm" placeholder="제목을 입력해 주세요.">
+										</td>
+										<th>공개여부</th>
+										<td colspan="3">
+											<input type="radio" name="boardPublicFl" value="Y" checked="checked">공개
+											<input type="radio" name="boardPublicFl" value="N">비공개
+										</td>
+									</tr>
+									<tr>
+										<th>작성자</th>
+										<td id="updateWriterId"></td>
+										<th>작성일자</th>
+										<td id="updateToday"></td>
+									</tr>
+									<tr>
+										<td class="input-td" colspan="4">
+											<textarea id="updateContent" name="boardContents" class="form-control" style="resize: none;" rows="15" id="comment" placeholder="내용을 입력해 주세요."></textarea>
+										</td>
+									</tr>
+									<tr>
+										<th>첨부파일</th>
+										<td id="updateFileInfo" colspan="3">
+											<input type="file" multiple="multiple" id="input-file-now" name="uploadFile" class="file-upload" />
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					</form>
+					<div class="row">
+						<div class="col-sm-2">
+							<button id="updateSaveBtn" class="btn btn-default btn-full">저장</button>
+						</div>
+						<div class="col-sm-8"></div>
+						<div class="col-sm-2">
+							<button id="updateCloseBtn" class="btn btn-default btn-full" data-dismiss="modal">닫기</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!--//update Modal -->
 
 	<!--modify Modal -->
 	<div class="modal fade" id="modiModal" role="dialog">
@@ -593,6 +669,116 @@ var cdata = null;
 var img = null;
 var pageButtonCheck = null;
 
+var sock = null;
+
+function setChat(value){
+	
+	sock = new SockJS('http://localhost:8080/sam/ajaxMain.do');
+	sock.onmessage = onMessage;
+	sock.onclose = onClose;
+	sock.onopen = onOpen;	
+	
+}		
+
+
+function sendMessage() {
+	sock.send($("#msg").val());
+}
+
+//서버에서 메시지를 받았을 때
+function onMessage(msg) {
+	
+	var today = new Date();
+	var year = today.getFullYear();
+	var month = ('0' + (today.getMonth() + 1)).slice(-2);
+	var day = ('0' + today.getDate()).slice(-2);
+	var hours = ('0' + today.getHours()).slice(-2); 
+	var minutes = ('0' + today.getMinutes()).slice(-2);
+	var seconds = ('0' + today.getSeconds()).slice(-2); 
+    var timeString = year + '-' + month  + '-' + day +", " + hours + ':' + minutes  + ':' + seconds;
+	
+	
+	var realData = msg;
+	var data = msg.data;
+	var sessionId = null; //데이터를 보낸 사람
+	var message = null;
+	
+	var arr = data.split(":");
+	
+	for(var i=0; i<arr.length; i++){
+		console.log('arr[' + i + ']: ' + arr[i]);
+		console.log(realData);
+	}
+	
+	var cur_session = $("#sessionName").val(); //현재 세션에 로그인 한 사람
+	
+	sessionId = arr[0];
+	message = arr[1];
+	fileName = arr[2];
+	
+	console.log("cur_session : " + cur_session);
+	console.log("sessionId : " + sessionId);
+	console.log("fileName : " + fileName);
+	
+    //로그인 한 클라이언트와 타 클라이언트를 분류하기 위함
+	if(sessionId == cur_session){
+		
+		var str = "<div class='row msg_container base_sent'>";
+		str += "<div class='col-md-10 col-xs-10'>";
+		str += "<div class='messages msg_sent'>";
+		str += "<p>"+message+"</p>";
+		str += "<time>"+timeString+" : <"+sessionId+"></time>";
+		str += "</div>";
+		str += "</div>";
+		str += "<div class='col-md-2 col-xs-2 avatar'>";
+		str += "<img src='${pageContext.request.contextPath}/resources/images/"+ fileName 
+		+"'  class=' img-responsive '>";
+		str += "</div>";
+		str += "</div>";
+		
+		$(".msg_container_base").append(str);
+		
+		str = "";
+	}
+	else{
+		
+		var strRec = "<div class='row msg_container base_receive'>";
+		strRec += "<div class='col-md-2 col-xs-2 avatar'>";
+		strRec += "<img src='${pageContext.request.contextPath}/resources/images/"+ fileName 
+		+"'  class=' img-responsive '>";
+		strRec += "</div>";
+		strRec += "<div class='col-md-10 col-xs-10'>";
+		strRec += "<div class='messages msg_receive'>";
+		strRec += "<p>"+message+"</p>";
+		strRec += "<time><"+sessionId+"> : "+timeString+"</time>";
+		strRec += "</div>";
+		strRec += "</div>";
+		strRec += "</div>";
+		
+		$(".msg_container_base").append(strRec);
+		
+		strRec = "";
+	}
+	
+}
+//채팅창에서 나갔을 때
+function onClose(evt) {
+	
+	var user = '${sessionScope.login.boardWriterName }';
+	var str = user + " 님이 퇴장하셨습니다.";
+	
+	$(".msg_container_base").append(str);
+}
+//채팅창에 들어왔을 때
+function onOpen(evt) {
+	
+	console.log("새 유저 입장");
+	var user = $("#sessionName").val();
+	var str = user + "님이 입장하셨습니다.";
+	
+	$(".msg_container_base").append(str);
+}
+
 function readURL(input){
 	if(input.files && input.files[0]){
 		var reader = new FileReader();
@@ -665,6 +851,8 @@ function sessionCheck(){
 		$('#loginId').val(result.loginId);
 		$('#writerName').html(result.loginId);
 		$('#sessionId').val(result.loginId);
+		$('#sessionName').val(result.loginName);
+		$('.chatContainer').css('display', 'block');
 		
 		if(result.selPage != null) $('#selPage').val(result.selPage);
 		if(result.keyWordType != null){
@@ -672,7 +860,7 @@ function sessionCheck(){
 			$("#keyword").val(result.keyword);
 			$("#searching").val('1');
 		}
-		
+		setChat();
 		getBoardList();
 		
 	}else{
@@ -688,6 +876,11 @@ function sessionCheck(){
 		
 		$('.table-after-login').css('display','none');
 		$('.iframe-before-login').css('display','block');
+		$('.chatContainer').css('display', 'none');
+		$('#loginId').val("");
+		$('#sessionId').val("");
+		$('#sessionName').val("");
+		//setChat(1);
 		
 	}
 	$('#myNavbar').html(html);
@@ -763,6 +956,7 @@ function checkPhoneExp(str){
 function logout(){
 	commonAjax($('#logoutUrl').val(), 'post', {}, 'json');
 	sessionCheck();
+	setChat(1);
 }
 
 function getBoardList(value){
@@ -937,7 +1131,7 @@ function showCont(idx, writer,keywordType , keyword){
 	}
 	
 	if(cdata.boardWriter == $('#loginId').val()){
-		$('#updateBoardDiv').html('<button onclick=\"modBtn()\" class=\"btn btn-default btn-full\">수정</button>');
+		$('#updateBoardDiv').html("<button onclick=\"modBtn('"+ cdata.idx +"'" + "," +"'"+ cdata.boardWriter +"'" + "," +"'"+ cdata.fileIdx +"')\" class=\"btn btn-default btn-full\">수정</button>");
 		$('#deleteBoardDiv').html("<button onclick=\"delBtn('"+ cdata.idx +"'" + "," +"'"+ cdata.boardWriter +"')\" class='btn btn-default btn-full\'>삭제</button>");
 	}else{
 		$('#updateBoardDiv').html('');
@@ -980,14 +1174,39 @@ function delBtn(idx, writer){
 	}
 }
 
-function modBtn(){
-	console.log(cdata.boardWriter);
-	console.log(cdata.date);
-	console.log(cdata.publicFl);
-	console.log(cdata.idx);
+function modBtn(idx,writer,fileIdx){
+	data = {'boardIdx' : idx , 'boardWriter' : writer , 'fileIdx' : fileIdx};
+	var result = commonAjax($('#updateViewUrl').val(), 'post' , data , 'json')
 	$('#modiCloseBtn').trigger('click');
-	$('#writeModal').modal();
+	$('#updateWriteModal').modal();
 	
+	console.log(result.boardInfo);
+	console.log(result.fileInfo);
+	
+	let resultFileIdx = null;
+	let fileName = null;
+	
+	if(result.fileInfo != null ){
+		resultFileIdx = result.fileInfo.fileIdx,
+		fileName = result.fileInfo.fileOriginalName,
+		$('#hiddenFileIdx').val(resultFileIdx);
+	}else{
+		$('#hiddenFileIdx').val(null);
+	}
+	$('#updateIdx').val(result.boardInfo.boardIdx);
+	$('#updateTitle').val(result.boardInfo.boardTitle);
+	$('#updateContent').val(result.boardInfo.boardContents);
+	$('#updateToday').text(result.boardInfo.boardWriteDate);
+	$('#updateWriterId').text(result.boardInfo.boardWriter);
+	$('#hiddenUpdateWriterId').val(result.boardInfo.boardWriter);
+	
+	if(result.fileInfo != null){
+		$('#updateFileInfo').html(fileName);
+	}else{
+		$('#updateFileInfo').html('<input type="file" multiple="multiple" id="input-file-now" name="uploadFile" class="file-upload" />');	
+	}
+	
+	/*
 	$('#modiIdx').val(cdata.idx);
 	$('#boardTitle').val(cdata.title);
 	$('#writerName').text(cdata.boardWriter);
@@ -1009,6 +1228,8 @@ function modBtn(){
 	}else{
 		$('#contentFile').html("첨부파일이 없습니다.");
 	}
+	*/
+
 }
 
 function resetSearch(){
@@ -1108,14 +1329,47 @@ $( document ).ready(function() {
 		}
 	});
 	
+	$('#updateSaveBtn').click(function(){
+		if($('#updateTitle').val().trim() == ''){
+			alert('제목을 작성하세요');
+		}else if($('#updateContent').val().trim() == ''){
+			alert("내용을 작성하세요");
+		}else if($('input:radio[name="boardPublicFl"]').val() == null ){
+			alert('공개 여부를 설정하세요');
+		}else{
+			var formdata = new FormData(document.getElementById("boardUpdateForm"));
+			var result = commonAjaxMulti($('#boardUpdateForm').attr('action'), formdata, 'text');
+			if(result==1){
+				alert('게시글 작성 및 수정 성공');
+				$('#updateCloseBtn').trigger('click');
+				getBoardList();
+			}else{
+				alert('작성 및 수정 실패');
+			}
+		}
+	});
+	
 	$('#writeModalBtn').click(function(){
 		$('#modiIdx').val('0');
-		$('#fileInfo').html('');
+		//$('#fileInfo').html('');
 		$('input:radio[name="boardPublicFl"]:input[value="Y"]').attr('checked', true);
 		$('input:radio[name="boardPublicFl"]:input[value="N"]').attr('checked', false);
 	});
+
+	$("#button-send").on("click", function(e) {
+		sendMessage();
+		$('#msg').val('');
+		console.log($('#msg').val());
+	});
+	
+	
 	
 });	
+
+
+// 채팅 sock 변수에 바로 객체를 생성하지 않고 로그인 성공시 담아줌
+
+
 
 
 </script>

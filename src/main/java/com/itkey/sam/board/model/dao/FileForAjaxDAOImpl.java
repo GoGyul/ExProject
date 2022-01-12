@@ -49,4 +49,15 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 		return sqlSession.selectOne("getFileForDownForAjax",fileIdx);
 	}
 
+	@Override
+	public int updateFileForAjax(List<FileDTO> fileList) {
+		int result = 0;
+		for(FileDTO fDTO : fileList) {
+			logger.debug("insertBoardFileForAjax DAO INPUT FileDAO === "+fDTO.toString());
+			sqlSession.insert("updateFileForAjax",fDTO);
+			result++;
+		}
+		return result;
+	}
+
 }

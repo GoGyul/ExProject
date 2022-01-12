@@ -266,9 +266,9 @@
 	<update id="updateBoardForAjax" parameterType="BoardDTO" >
 		UPDATE sample_board_tb
 		SET 
+		<if test="fileIdx !=null">FILE_IDX = #{fileIdx},</if>
 		BOARD_TITLE = #{boardTitle} ,
-		BOARD_CONTENTS = #{boardContents},
-		FILE_IDX = #{fileIdx}
+		BOARD_CONTENTS = #{boardContents}
 		WHERE BOARD_IDX = #{boardIdx}
 		AND BOARD_WRITER = #{boardWriter}
 	</update>

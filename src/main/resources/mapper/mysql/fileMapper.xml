@@ -88,5 +88,15 @@
 		WHERE
 		FILE_IDX = #{fileIdx}
 	</select>
+	
+	<update id="updateFileForAjax" parameterType="FileDTO">
+		UPDATE education.sample_file_tb
+		SET 
+		FILE_ORIGINAL_NAME = #{fileOriginalName},
+		FILE_CHANGED_NAME = #{fileChangedName},
+		FILE_PATH = #{filePath}
+		WHERE
+		FILE_IDX = #{fileIdx}
+	</update>
 
 </mapper>

@@ -40,5 +40,10 @@ public class FileForAjaxServiceImpl implements FileForAjaxService {
 	public FileDTO getFileForDownForAjax(int fileIdx) {
 		return dao.getFileForDownForAjax(fileIdx);
 	}
+
+	@Override
+	public int updateFileForAjax(List<FileDTO> fileList) {
+		return dao.updateFileForAjax(fileList);
+	}
 	
 }
