@@ -687,13 +687,12 @@ var pageButtonCheck = null;
 
 var sock = null;
 
+//	소켓을 연결시켜주는 메서드 자바스크립트 선언을 해주어야 한다.
 function setChat(value){
-	
 	sock = new SockJS('http://localhost:8080/sam/ajaxMain.do');
 	sock.onmessage = onMessage;
 	sock.onclose = onClose;
 	sock.onopen = onOpen;	
-	
 }		
 
 
@@ -795,6 +794,7 @@ function onOpen(evt) {
 	$(".msg_container_base").append(str);
 }
 
+//	파일 업로드 할때 이미지를 보여준다.
 function readURL(input){
 	if(input.files && input.files[0]){
 		var reader = new FileReader();
@@ -805,6 +805,7 @@ function readURL(input){
 	}
 }
 
+//	ajax의 모듈화 파라미터를 전달받아 결과를 리턴하게끔 되어있음.
 function commonAjax(url, type, data, dataType){
 	var result = "";
 	$.ajax({
@@ -823,6 +824,7 @@ function commonAjax(url, type, data, dataType){
 	return result;
 }
 
+//	파일처리를 하기 위한 ajax 모듈
 function commonAjaxMulti(url, data, dataType){
 	var result = "";
 	$.ajax({
@@ -862,6 +864,7 @@ function sessionCheck(){
 		html += "<li><a href='#' id='logoutBtn' onClick='logout()'><i class='fas fa-sign-out-alt'></i> 로그아웃</a></li>";
 		html += "</li></ul>";
 		
+		//	세션값들은 한데 모아 따로 저장하는게 좋을것 같음.
 		$('.table-after-login').css('display','block');
 		$('.iframe-before-login').css('display','none');
 		$('#loginId').val(result.loginId);
@@ -876,7 +879,9 @@ function sessionCheck(){
 			$("#keyword").val(result.keyword);
 			$("#searching").val('1');
 		}
+		//	로그인시 채팅소켓을 뚫어준다.
 		setChat();
+		//	getBoardList메서드 실행
 		getBoardList();
 		
 	}else{
@@ -903,13 +908,15 @@ function sessionCheck(){
 	
 }
 
-
+//	회원 가입을 위한 로직, registerForm 안의 값들을 serialize 한뒤 결과를 받아 중복을 확인한다.
 function registerTest(param){
 	var result = commonAjax($('#checkIdUrl').val(), 'post', $('#registerForm').serialize(), 'text');
 	console.log($('#registerForm').serialize());
 	if(param == "insert"){
 		if(result == 0){
+			//	회원가입시 업로드한 프로필 사진을 처리하기 위해 mulitpart 타입의 ajax 모듈을 호출,
 			var formdata = new FormData(document.getElementById('registerForm'));
+			//	id값이 registerForm 인 녀석의 action 을 실행하며 formdata가 전송된다.
 			var rs = commonAjaxMulti($('#registerForm').attr('action'), formdata, 'text');
 			console.log(formdata);
 			if(rs == 1){
@@ -930,24 +937,29 @@ function registerTest(param){
 	}
 }
 
+//	로그인 메서드
 function login(){
+	//	먼저 회원 아이디와 비밀번호를 확인하는 컨트롤러의 메서드로 보내서 유효한지 확인.
 	var result = commonAjax($('#loginCheckUrl').val(), 'post', $('#loginFormForAjax').serialize(), 'text');
 	if(result == 0){
 		alert("아이디가 존재하지 않습니다.");
 	}else if(result == 2){
 		alert("비밀번호가 틀렸습니다.");
 	}else if(result == 1){
+		//	모든 검문을 통과하면 로그인을 시켜줍니다.
 		var result = commonAjax($('#loginFormForAjax').attr('action'), 'post', $('#loginFormForAjax').serialize(), 'json');
 		console.log("login result ====== "+ result);
 		console.log("login result ====== "+ result.login);
 		console.log("login result ====== "+ result.loginId);
 		console.log("login result ====== "+ result.loginName);
+		//	세션을 체크한뒤 화면 이동
 		sessionCheck();
 	}else{
 		alert("알수없는 오류");
 	}
 }
 
+//	패스워드 입력시 부트스트랩 때문에 패스워드가 화면에 보이지 않아서 설정.
 function passwordKeyUp(){
 	if($('#loginBoardWriterPw').val().trim() == ""){
 		$('#loginBoardWriterPw').css('font-family','inherit');
@@ -957,35 +969,43 @@ function passwordKeyUp(){
 	}
 }
 
+//	이메일의 유효성을 검사하는 메서드 도큐먼트 단에 onkeyup 으로 호출됨
 function checkEmail(str){
 	var regExp = /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/;
 	if(regExp.test(str)) return true;
 	else return false;
 }
 
+//	전화번호의 유효성 검사하는 메서드 "-" 를 제외하도록 설정되어있음
 function checkPhoneExp(str){
 	var phoneExp = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
 	if(phoneExp.test(str)) return true;
 	else return false;
 }
 
+//	간단한 로그아웃 메서드
 function logout(){
 	commonAjax($('#logoutUrl').val(), 'post', {}, 'json');
 	sessionCheck();
 	setChat(1);
 }
 
+//	로그인시 게시판을 불러오는 메서드 매개변수 받는 자바 오브젝트 임, 키워드와 키워드 타입, 페이지 넘버등이 담긴 값이 오며
+//	값이 오지 않을시 빈 데이터 {} 를 가지고 commonAjax 를 호출하게끔 만듬,
 function getBoardList(value){
 	
 	var data = null;
 	
+	//	매개변수로 넘어오는 값이 null 일시 resetSearch 메서드 실행, 검색기능의 option, input 값을 초기화 해줍니다 (게시글 목록 첫페이지로 가기위한 방법) 
 	if(value == null){
 		data = {};
 		resetSearch();
 	}else{
+		//	매개변슈의 값이 있다면 data 변수에 담아 ajax로 넘길거임
 		data = value;
 	}
 	
+	//	들고오는 데이터가 굉장히 많음, 검색, 페이징, 게시글들을 위한 거의 모든 데이터 가져옴
 	var result = commonAjax($('#listUrl').val(), 'post', data ,'json');
 	$('#countBoard').text(result.countBoard);
 	$('#countWriter').text(result.countWriter);
@@ -1003,7 +1023,8 @@ function getBoardList(value){
 	var startNum = parseInt(result.pageMaker.cri.startNum);
 	
 	console.log("토탈 "+ total +","+ pageNumInt + "," + amount);
-
+	
+	//	가지고온 게시글 리스트를 화면에 뿌려주기 위한 작업
 	var html = "";
 	for(var i = 0; i<result.boardList.length; i++){
 		html += "<tr>";
@@ -1037,6 +1058,7 @@ function getBoardList(value){
 	console.log("pageMaker.cri.amount======"+result.pageMaker.cri.amount);
 	console.log("pageMaker.cri.startNum======"+result.pageMaker.cri.startNum);
 	
+	//	페이징 처리를 위한 로직
 	var htmlPage = "";
 	if(result.pageMaker.prev == true){
 		console.log("true check prev");
@@ -1057,15 +1079,17 @@ function getBoardList(value){
 		htmlPage += " <a  class='page-link' onclick='pageBtn("+j+")'>Next</a>";
 		htmlPage += "</li>";
 	}
+	//	가공을 마친 데이터들을 해당 태그에 뿌려줌
 	$("#bdList").html(html);
 	$('.pagination').html(htmlPage);
 	
+	//	현재 클릭한 페이지의 모달? 아무튼 색깔 넣어주는 기능
 	console.log("pageNumint ========"+pageNumInt);
 	$('#pageButton'+pageNumInt).css('background-color','bisque');
 }
 
+//	해당 페이지 버튼을 누르면 해당 pageNum에 대한 값과 검색을 했다면 키워드, 타입을 자바 오브젝트로 변환해 getBoardList() 매개변수에 담아 실행시킴
 function pageBtn(n){
-	
 	var num = parseInt(n);
 	var data = {
 			"keywordType" : $("#keywordType").val(),
@@ -1075,7 +1099,11 @@ function pageBtn(n){
 	getBoardList(data);
 }
 
+//	게시글 상세보기를 위한 메서드, 키워드 타입과 키워드를 매개변수로 받는 이유는,
+//	클라이언트가 검색을 해서 어떤 게시글을 상세 보기 했을때 , 이전글, 다음글이 해당 키워드와 타입에 대한 게시글이어야 하기 때문에 매개변수로 받음
+//	키워드와 타입이 없으면 전체 게시글이라 판단.
 function modiModal(fl, idx, writer , keywordType , keyword){
+	//	비공개글 열람을 막기위한 로직
 	if(fl == 'N'){
 		if(writer == $('#loginId').val()){
 			showCont(idx,writer,keywordType , keyword);
@@ -1089,10 +1117,12 @@ function modiModal(fl, idx, writer , keywordType , keyword){
 	}
 }
 
+//	게시판 상세페이지, modiModal 에서 호출된다.
 function showCont(idx, writer,keywordType , keyword){
 	var data = { 'boardIdx' : idx , 'boardWriter' : writer , 'keywordType' : keywordType , 'keyword' : keyword};
 	var result = commonAjax($('#selectUrl').val(), 'post', data , 'json');
 	
+	//	결과를 받아서 데이터 가공 게시글에 파일 없을수도 있기 때문에 file에 관한 변수는 null 설정
 	cdata = {
 		idx : result.boardInfo.boardIdx,
 		boardWriter : result.boardInfo.boardWriter,
@@ -1113,29 +1143,30 @@ function showCont(idx, writer,keywordType , keyword){
 	console.log(result.nextBoard);
 	console.log(result.prevBoard);
 	
+	//	리턴받은 데이터에 fileInfo 데이터가 있다면 cdata에 세팅해줌.
 	if(result.fileInfo != null ){
 		cdata.fileIdx = result.fileInfo.fileIdx,
 		cdata.fileName = result.fileInfo.fileOriginalName
 	}
-	
+	//	제목이 없을때
 	if(cdata.title != null ) $('#contentTitle').text(cdata.title);
 	else $('#contentTitle').text('제목없음');
-	
+	//	조회수가 없을때
 	if(cdata.count != null) $('#contentView').text(cdata.count);
 	else $('#contentView').text('0');
-	
+	//	작성자가 없을때
 	if(cdata.boardWriter != null) $('#contentWriter').text(cdata.boardWriter);
 	else $('#contentWriter').text('알수없음');
-	
-	if(cdata.boardWriter != null) {
+	//	콘텐츠가 없을때
+	if(cdata.content != null) {
 		$('.contentContent').text(cdata.content);
 	}else{
 		$('.contentContent').text('내용없음');
 	}
-	
+	//	작성일이 없을때
 	if(cdata.date != null) $('#contentDate').text(cdata.date);
 	else $('#contentDate').text('알수없음');
-	
+	//	게시글에 파일이 없을때
 	if(result.fileInfo == null ){
 		$('#contentFile').text('첨부파일이 없습니다.');
 	}else{
@@ -1145,7 +1176,7 @@ function showCont(idx, writer,keywordType , keyword){
 		$('#contentFile').html(htmlString);
 		
 	}
-	
+	//	게시글 작성자과 로그인한 회원이 같다면 수정, 삭제 버튼이 활성화 되어 해당 로직을 진행할수 있게끔 
 	if(cdata.boardWriter == $('#loginId').val()){
 		$('#updateBoardDiv').html("<button onclick=\"modBtn('"+ cdata.idx +"'" + "," +"'"+ cdata.boardWriter +"'" + "," +"'"+ cdata.fileIdx +"')\" class=\"btn btn-default btn-full\">수정</button>");
 		$('#deleteBoardDiv').html("<button onclick=\"delBtn('"+ cdata.idx +"'" + "," +"'"+ cdata.boardWriter +"')\" class='btn btn-default btn-full\'>삭제</button>");
@@ -1153,11 +1184,10 @@ function showCont(idx, writer,keywordType , keyword){
 		$('#updateBoardDiv').html('');
 		$('#deleteBoardDiv').html('');
 	}
-	
+	//	상세보기한 게시글의 이전글로 갈수 있게끔 해놓은 로직
 	if(result.prevBoard != null){
 		$('#prevBoardTitle').html("<button class='btn btn-link' onclick=\"modiModal('"+result.prevBoard.BOARD_PUBLIC_FL +"', '"+ result.prevBoard.BOARD_IDX +"', '"+ result.prevBoard.BOARD_WRITER +"' , '"+ $('#keywordType').val() +"' , '" + $('#keyword').val() +"')\">" + result.prevBoard.BOARD_TITLE + "</button>");
 		$('#prevBoardDate').text(result.prevBoard.BOARD_WRITE_DATE);
-		
 	}else{
 		$('#prevBoardTitle').html("마지막 글입니다.");
 		$('#prevBoardDate').text("");
@@ -1173,6 +1203,7 @@ function showCont(idx, writer,keywordType , keyword){
 	
 }
 
+//	게시글 삭제를 위한 로직
 function delBtn(idx, writer){
 	var answer = confirm('글을 삭제하시겠습니까?');
 	if(answer){
@@ -1190,6 +1221,7 @@ function delBtn(idx, writer){
 	}
 }
 
+//	게시글 수정버튼 클릭시 진행되는 로직
 function modBtn(idx,writer,fileIdx){
 	data = {'boardIdx' : idx , 'boardWriter' : writer , 'fileIdx' : fileIdx};
 	var result = commonAjax($('#updateViewUrl').val(), 'post' , data , 'json')
@@ -1202,6 +1234,7 @@ function modBtn(idx,writer,fileIdx){
 	let resultFileIdx = null;
 	let fileName = null;
 	
+	//	수정하려는 게시글의 파일 존재 여부에 대한 처리
 	if(result.fileInfo != null ){
 		resultFileIdx = result.fileInfo.fileIdx,
 		fileName = result.fileInfo.fileOriginalName,
@@ -1209,6 +1242,7 @@ function modBtn(idx,writer,fileIdx){
 	}else{
 		$('#hiddenFileIdx').val(null);
 	}
+	//	수정 모달창에 필요한 값들을 세팅한다.
 	$('#updateIdx').val(result.boardInfo.boardIdx);
 	$('#updateTitle').val(result.boardInfo.boardTitle);
 	$('#updateContent').val(result.boardInfo.boardContents);
@@ -1216,6 +1250,7 @@ function modBtn(idx,writer,fileIdx){
 	$('#updateWriterId').text(result.boardInfo.boardWriter);
 	$('#hiddenUpdateWriterId').val(result.boardInfo.boardWriter);
 	
+	//	파일에 대한 처리 또해줫네...
 	if(result.fileInfo != null){
 		$('#updateFileInfo').html(fileName);
 	}else{
@@ -1228,11 +1263,13 @@ function modBtn(idx,writer,fileIdx){
 
 }
 
+//	검색 옵션, 인풋버튼 리셋 해주는 메서드 
 function resetSearch(){
 	$("#keyword").val("");
 	$('select[id="keywordType"]').val("writerAndContent").attr("selected",true);
 }
 
+//	파일을 다운로드 하기위한 로직 location.href 를 해주지 않으면 다운로드를 못받으니 주의 !
 function downFile(fileIdx){
 	let result = commonAjax($('#fileDownUrl').val(), 'post', {'fileIdx' : fileIdx}, 'text');
 	if(result == 'fail'){
@@ -1242,10 +1279,12 @@ function downFile(fileIdx){
 	}
 }
 
+//	돔이 준비되면 사용할수 있는 기능들
 $( document ).ready(function() {
-
+	//	세션을 체크한뒤 랜딩 페이지를 호출
 	sessionCheck();
 	
+	//	파일 업로드 할때 이미지 파일만 올릴수 있게끔 설정
 	$('#up').on('change', function(){
 		if($('#up').val() != ''){
 			var ext = $('#up').val().split('.').pop().toLowerCase();
@@ -1259,6 +1298,7 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	#updateFileUp 아이디를 가지고 있는 태그는 동적으로 생성되는 태그이기 때문에 document.on 으로 호출하도록 구현
 	$(document).on("change" , "#updateFileUp" , function(){
 		if($('#updateFileUp').val() != ''){
 			var ext = $('#updateFileUp').val().split('.').pop().toLowerCase();
@@ -1267,6 +1307,7 @@ $( document ).ready(function() {
 				$('#updateFileUp').val("");
 				return;
 			}else{
+				//	파일을 업로드 한 경우, 삭제 버튼은 보여주도록 구현
 				$('#delFileOnWriteBoard').remove();
 				readURL(this);
 				$('#updateFileInfo').append('<button type="button" style="margin-right:10px" id="delFileOnWriteBoard">삭제</button>');
@@ -1274,8 +1315,7 @@ $( document ).ready(function() {
 		}
 	});
 	
-	
-	
+	//	게시물 작성시 파일을 업로드 할때 마찬가지로 구현 writeFileUp0 클래스를 가지고 있는 태그는 동적으로 생성되지 않았음
 	$('.writeFileUp0').on('change', function(){
 		if($('.writeFileUp0').val() != ''){
 			var ext = $('.writeFileUp0').val().split('.').pop().toLowerCase();
@@ -1291,6 +1331,7 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	delFileOnWriteBoard 의 아이디를 가지고 있는 태그는 동적으로 생성되었기 때문에 document.on 으로 호출되게끔 구현 등록하려고 업로드 해놨던 파일을 초기화 해줌 파일 val() 를 '' 으로 해주면 되더라
 	$(document).on("click", "#delFileOnWriteBoard", function(){
 		$('#updateFileUp').val("");
 		$('#writeFileUp').val('');
@@ -1332,6 +1373,7 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	검색 버튼 클릭시 키워드와 타입을 데이터로 만들어 getBoardList메서드에 보내줌
 	$("#searchBtn").click(function(){
 		if($('#keyword').val().trim() == ""){
 			alert("검색어를 입력해 주세요");
@@ -1344,6 +1386,7 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	게시글 작성 완료 버튼 클릭시 파일이 있을수도 있어서 commonAjaxMulti 함수로 실행
 	$('#writeSaveBtn').click(function(){
 		if($('#boardTitle').val().trim() == ''){
 			alert('제목을 작성하세요');
@@ -1364,6 +1407,19 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	게시글 작성 페이지에서 닫기 버튼을 누를시 인풋, 텍스트어레이어에 작성해 놓은 값들이 남아있으므로 싹 비워줌
+	$('#writeCloseBtn').click(function(){
+		let answer = confirm("작성한 내용이 모두 사라집니다. 계속 진행하시겠습니까?");
+		if(answer){
+			$("#boardTitle").val('');
+			$('#boardContent').val('');
+			$('#updateFileUp').val("");
+			$('#writeFileUp').val('');
+			$('#delFileOnWriteBoard').remove();
+		}
+	});
+	
+	//	게시글 수정 완료 버튼 클릭시 
 	$('#updateSaveBtn').click(function(){
 		if($('#updateTitle').val().trim() == ''){
 			alert('제목을 작성하세요');
@@ -1384,6 +1440,7 @@ $( document ).ready(function() {
 		}
 	});
 	
+	//	왜 만들었는지 잘 모르겠음
 	$('#writeModalBtn').click(function(){
 		$('#modiIdx').val('0');
 		//$('#fileInfo').html('');
@@ -1391,6 +1448,7 @@ $( document ).ready(function() {
 		$('input:radio[name="boardPublicFl"]:input[value="N"]').attr('checked', false);
 	});
 
+	//	채팅 메세지 보낼때 함수
 	$("#button-send").on("click", function(e) {
 		sendMessage();
 		$('#msg').val('');
