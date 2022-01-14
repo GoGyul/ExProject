@@ -1409,14 +1409,14 @@ $( document ).ready(function() {
 	
 	//	게시글 작성 페이지에서 닫기 버튼을 누를시 인풋, 텍스트어레이어에 작성해 놓은 값들이 남아있으므로 싹 비워줌
 	$('#writeCloseBtn').click(function(){
-		let answer = confirm("작성한 내용이 모두 사라집니다. 계속 진행하시겠습니까?");
-		if(answer){
+		//let answer = confirm("작성한 내용이 모두 사라집니다. 계속 진행하시겠습니까?");
+		//if(answer){
 			$("#boardTitle").val('');
 			$('#boardContent').val('');
 			$('#updateFileUp').val("");
 			$('#writeFileUp').val('');
 			$('#delFileOnWriteBoard').remove();
-		}
+		//}
 	});
 	
 	//	게시글 수정 완료 버튼 클릭시 

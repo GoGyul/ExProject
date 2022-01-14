@@ -114,6 +114,17 @@
 <script>
 
 $("#up").change(function(){
+	
+	if($('#up').val() != ''){
+		var ext = $('#up').val().split('.').pop().toLowerCase();
+		if($.inArray(ext, ['png','jpg','jpeg'])==-1){
+			alert("png,jpg,jpeg 파일만 업로드 할수 있습니다." );
+			$('#up').val("");
+			return;
+		}else{
+			readURL(this);
+		}
+	}
     
 	var boardWriter = $('#boardWriter').val();
 	var fileIdx = $('#hiddenFileIdx').val();
@@ -124,8 +135,7 @@ $("#up").change(function(){
     for(var i=0; i<$('#up')[0].files.length; i++){
 		  formData.append('uploadFile', $('#up')[0].files[i]);
 	}
-	 
- 
+    
     $.ajax({
         type : 'post',
         url : '/sam/uploadFileAjax.do?fileIdx='+fileIdx+"&boardWriter="+boardWriter,

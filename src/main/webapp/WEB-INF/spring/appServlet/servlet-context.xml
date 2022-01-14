@@ -75,4 +75,20 @@
 	<beans:bean id="chattingHandler" class="com.itkey.sam.util.ChattingHandler"/>
 	
 	
+	<interceptors>
+		<interceptor>
+			<mapping path="/write.do" />
+			<!-- 
+			<exclude-mapping path="/login.do"/>
+			<exclude-mapping path="/logOn.do"/>
+			<exclude-mapping path="/register.do"/>
+			<exclude-mapping path="/main.do"/>
+			<exclude-mapping path="/getBoard.do"/>
+			<exclude-mapping path="/ajaxMain.do"/>
+			 -->
+			<beans:bean id="loginInterceptor" class="com.itkey.sam.util.MyInterceptor" />
+		</interceptor>
+	</interceptors> 
+	
+	
 </beans:beans>

@@ -40,13 +40,13 @@
 					</div>
 				</div>
 				<div class="type_msg" style="padding : 1%;">
-						<div class="input_msg_write">
-							<input type="text" id="msg" class="write_msg" placeholder="내용을 입력해 주세요." />
-							<button id="button-send" class="msg_send_btn" type="button" style="margin-top: 1%; margin-right:1%;">
-								<i class="fa fa-paper-plane" aria-hidden="true"></i>
-							</button>
-						</div>
+					<div class="input_msg_write">
+						<input type="text" id="msg" class="write_msg" placeholder="내용을 입력해 주세요." />
+						<button id="button-send" class="msg_send_btn" type="button" style="margin-top: 1%; margin-right:1%;">
+							<i class="fa fa-paper-plane" aria-hidden="true"></i>
+						</button>
 					</div>
+				</div>
 			</div>
 		</div>
 	</div>

@@ -248,7 +248,7 @@ public class BoardForAjaxController {
 	
 	
 	@RequestMapping(value = "/fileDownForAjax.do")
-	public Object fileDownForAjax(@RequestParam Map<String, Object> param, HttpServletResponse response, HttpServletRequest request) throws IOException {
+	public Object fileDownForAjax(@RequestParam Map<String, Object> param) throws IOException {
 		
 		int fileIdx = Integer.parseInt((String)param.get("fileIdx")); 
 		logger.debug("fileDownForAjax fileIdx ====== "+ fileIdx);
@@ -257,7 +257,6 @@ public class BoardForAjaxController {
 		logger.debug("fileDownForAjax fDTO ====== "+ fDTO.toString());
 			
 		File file = new File(fDTO.getFilePath(), fDTO.getFileOriginalName());
-		
 		logger.debug("file  ========================="+file);
 		
 		if(file.exists()) {
